@@ -41,8 +41,7 @@ class MethodCallHandlerImpl implements MethodChannel.MethodCallHandler {
           properties.put("lastFetchTime", firebaseRemoteConfigInfo.getFetchTimeMillis());
           properties.put(
               "lastFetchStatus", mapLastFetchStatus(firebaseRemoteConfigInfo.getLastFetchStatus()));
-          properties.put(
-              "inDebugMode", firebaseRemoteConfigInfo.getConfigSettings().isDeveloperModeEnabled());
+          properties.put("inDebugMode", false);
           properties.put("parameters", getConfigParameters());
           result.success(properties);
           break;
@@ -51,9 +50,8 @@ class MethodCallHandlerImpl implements MethodChannel.MethodCallHandler {
         {
           boolean debugMode = call.argument("debugMode");
           final FirebaseRemoteConfig firebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
-          FirebaseRemoteConfigSettings settings =
-              new FirebaseRemoteConfigSettings.Builder().setDeveloperModeEnabled(debugMode).build();
-          firebaseRemoteConfig.setConfigSettings(settings);
+          FirebaseRemoteConfigSettings settings = new FirebaseRemoteConfigSettings.Builder().build();
+          firebaseRemoteConfig.setConfigSettingsAsync(settings);
           result.success(null);
           break;
         }
@@ -124,7 +122,8 @@ class MethodCallHandlerImpl implements MethodChannel.MethodCallHandler {
       case "RemoteConfig#setDefaults":
         {
           Map<String, Object> defaults = call.argument("defaults");
-          FirebaseRemoteConfig.getInstance().setDefaults(defaults);
+          final FirebaseRemoteConfig firebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
+          firebaseRemoteConfig.setDefaultsAsync(defaults);
           SharedPreferences.Editor editor = sharedPreferences.edit();
           editor.putStringSet(DEFAULT_PREF_KEY, defaults.keySet()).apply();
           result.success(null);
